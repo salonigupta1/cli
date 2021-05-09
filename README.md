@@ -29,7 +29,10 @@ git clone "https://github.com/salonigupta1/cli.git"
 4. Go to the directory.
 5. Type the following command to run the application
 ```
-run app.go url
+go build cli
+```
+```
+go run cli url
 ```
 6. Follow the instructions, you are good to go 
 

@@ -20,45 +20,45 @@ var urlCmd = &cobra.Command{
 	Short:                      "A brief description of your command",
 	SuggestionsMinimumDistance: 1,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		reader := bufio.NewReader(os.Stdin)
-		log.Println("Enter the URL: ")
-		txt, _ := reader.ReadString('\n')
-		url := strings.TrimSpace(txt)
-		response, err := utils.GetCall(url)
-		if err != nil {
-			fmt.Println("Error: check for the URL entered, try something like https://www.google.com")
-			return nil
-		}
-		contentType := response.Header.Get("Content-type")
-		if contentType == "application/json" {
-			fmt.Println("YES")
-		} else {
-			fmt.Println("NO")
-		}
-		err = validateURLResponse(response)
-		fmt.Println(response.Status)
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return nil
-		}
-		defer response.Body.Close()
-		data, err := ioutil.ReadAll(response.Body)
+		input:
+			log.Println("Write exit to terminate")
+			reader := bufio.NewReader(os.Stdin)
+			log.Println("Enter the URL: ")
+			txt, _ := reader.ReadString('\n')
+			if txt == "exit\n" {
+				return nil
+			}
+			url := strings.TrimSpace(txt)
+			response, err := utils.GetCall(url)
+			if err != nil {
+				fmt.Println("Error: check for the URL entered, try something like https://www.google.com")
+				goto input
+			}
+		
+			fmt.Println(response.Status)
+			err = ValidateURLResponse(response)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				goto input
+			}
+			defer response.Body.Close()
+			data, err := ioutil.ReadAll(response.Body)
 
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return nil
-		}
-		_, err = utils.ParseXml(string(data))
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return nil
-		}
+			if err != nil {
+				fmt.Println("Error: ", err)
+				goto input
+			}
+			_, err = utils.ParseXml(string(data))
+			if err != nil {
+				fmt.Println("Error: ", err)
+				goto input
+			}
 
-		return nil
+			return nil
 	},
 }
 
-func validateURLResponse(response *http.Response) error {
+func ValidateURLResponse(response *http.Response) error {
 	if !utils.IsStatusOk(response) {
 		return errors.New("the given website corresponds to url is down")
 	}

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"cli/src/utils"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,47 +13,69 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
+
+func CallFunction(txt string) error{
+	url := strings.TrimSpace(txt)
+	response, err := utils.GetCall(url)
+	if err != nil {
+		log.Println("Error: check for the URL entered, try something like https://www.google.com")
+		return err
+	}
+
+	err = ValidateURLResponse(response)
+
+	if err != nil {
+		log.Println("Error: ", err)
+		return err
+	}
+	//fmt.Println(response.Status)
+
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+
+	if err != nil {
+		log.Println("Error: ", err)
+		return err
+	}
+	_, err = utils.ParseXml(string(data))
+	if err != nil {
+		log.Println("Error: ", err)
+		return err
+	}
+	return nil
+}
+
+var CallFunctionCmd = &cobra.Command{
+	Use: "CallFunction",
+	Short: "CallFunction",
+	SuggestionsMinimumDistance: 1,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		CallFunction(args[0])
+		return nil
+	},
+}
+
 // urlCmd represents the url command
 var urlCmd = &cobra.Command{
 	Use:                        "url",
 	Short:                      "A brief description of your command",
 	SuggestionsMinimumDistance: 1,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		input:
-			log.Println("Write exit to terminate")
-			reader := bufio.NewReader(os.Stdin)
+		log.Println("Write exit to terminate")
+		reader := bufio.NewReader(os.Stdin)
+		log.Println("Enter the URL: ")
+		txt, _ := reader.ReadString('\n')
+		for ; txt!="exit\n" ; {
+			//Checks the url again and again, until you type exit
+			CallFunction(txt)
+			reader = bufio.NewReader(os.Stdin)
 			log.Println("Enter the URL: ")
-			txt, _ := reader.ReadString('\n')
-			if txt == "exit\n" {
-				return nil
-			}
-			url := strings.TrimSpace(txt)
-			response, err := utils.GetCall(url)
-			if err != nil {
-				fmt.Println("Error: check for the URL entered, try something like https://www.google.com")
-				goto input
-			}
-		
-			fmt.Println(response.Status)
-			err = ValidateURLResponse(response)
-			if err != nil {
-				fmt.Println("Error: ", err)
-				goto input
-			}
-			defer response.Body.Close()
-			data, err := ioutil.ReadAll(response.Body)
+			txt, _ = reader.ReadString('\n')
+		}
 
-			if err != nil {
-				fmt.Println("Error: ", err)
-				goto input
-			}
-			_, err = utils.ParseXml(string(data))
-			if err != nil {
-				fmt.Println("Error: ", err)
-				goto input
-			}
-
-			return nil
+		return nil
 	},
 }
 
@@ -72,16 +93,4 @@ func init() {
 	rootCmd.AddCommand(urlCmd)
 }
 
-/*
-TODO:
-	- understand the code
-	- Add unit tests and benchmarking
-	- Think of more condition which we could use to validate URL response !!
-	- Add a single line comment to every function which explains what the function is doing
-	- Add a readme file here which should contains what this small project is doing,
-		what technologies we have used here for unit tests, benchmarks and static code analysers,
-		step to setup this and how could we run this project on our machine.
-	- In case of error program should not be terminated.
-	- termination only happens when we press enter exit or ctrl + c
-	- find different way to run the program.
-*/
+

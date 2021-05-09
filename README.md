@@ -14,7 +14,7 @@ These instructions will get you a copy of the project up and running on your loc
 ## Pre-requisite
 1. Install Golang in your system
 ```
-Go to the official website and download it
+https://golang.org/
 ```
 2. Install cobra 
 ```

@@ -23,7 +23,7 @@ go get github.com/spf13/cobra/cobra
 
 2. Clone the repository in your system
 ```
-git clone "https://github.com/salonigupta1/my-calc.git"
+git clone "https://github.com/salonigupta1/cli.git"
 ```
 3. Open Command Prompt (if you are using Windows) or terminal in general
 4. Go to the directory.
